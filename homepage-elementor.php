@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Homepage Elementor
  * Description: Plugin homepage editor untuk Elementor dengan elemen kustomisasi lengkap
- * Version: 1.0.0
+ * Version: 1.0.2
  * Author: kamaltz
  */
 
@@ -18,7 +18,7 @@ require_once HOMEPAGE_PATH . 'includes/updater.php';
 class Homepage_Elementor {
     
     public function __construct() {
-        add_action('plugins_loaded', [$this, 'init']);
+        add_action('init', [$this, 'init']);
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('admin_init', [$this, 'register_settings']);
         add_action('wp_ajax_check_github_update', [$this, 'check_github_update']);
@@ -26,7 +26,7 @@ class Homepage_Elementor {
         add_action('wp_ajax_manual_update_plugin', [$this, 'manual_update_plugin']);
         
         // Initialize updater
-        new Homepage_Elementor_Updater(__FILE__, '1.0.0');
+        new Homepage_Elementor_Updater(__FILE__, '1.0.2');
     }
     
     public function init() {
@@ -100,6 +100,11 @@ class Homepage_Elementor {
         ?>
         <div class="wrap">
             <h1>Homepage Elementor Settings</h1>
+            <div class="notice notice-info">
+                <p><strong>Plugin Version:</strong> <?php echo get_plugin_data(__FILE__)['Version']; ?> | 
+                <strong>Author:</strong> kamaltz | 
+                <strong>Last Updated:</strong> <?php echo date('Y-m-d H:i:s', filemtime(__FILE__)); ?></p>
+            </div>
             <form method="post" action="options.php">
                 <?php settings_fields('homepage_elementor_settings'); ?>
                 <table class="form-table">
@@ -136,8 +141,10 @@ class Homepage_Elementor {
             
             <h3>Debug Info</h3>
             <button type="button" id="clear-cache" class="button">Clear Update Cache</button>
+            
             <script>
             jQuery(document).ready(function($) {
+                // Clear cache functionality
                 $('#clear-cache').click(function() {
                     $.post(ajaxurl, {
                         action: 'clear_update_cache'
@@ -145,11 +152,8 @@ class Homepage_Elementor {
                         alert('Cache cleared');
                     });
                 });
-            });
-            </script>
-            
-            <script>
-            jQuery(document).ready(function($) {
+                
+                // Check update functionality
                 $('#check-update').click(function() {
                     $('#update-status').html('Checking for updates...');
                     $.post(ajaxurl, {

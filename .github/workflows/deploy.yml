@@ -48,7 +48,7 @@ jobs:
     
     - name: Update version in build files
       run: |
-        sed -i "s/Version: .*/Version: ${{ steps.version.outputs.new_version }}/" homepage-elementor.php
+        sed -i "s/\* Version: .*/\* Version: ${{ steps.version.outputs.new_version }}/" homepage-elementor.php
         sed -i "s/new Homepage_Elementor_Updater(__FILE__, '[^']*')/new Homepage_Elementor_Updater(__FILE__, '${{ steps.version.outputs.new_version }}')/" homepage-elementor.php
     
     - name: Create plugin zip
