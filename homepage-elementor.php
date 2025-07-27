@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Homepage Elementor
  * Description: Plugin homepage editor untuk Elementor dengan elemen kustomisasi lengkap
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: kamaltz
  */
 
@@ -27,7 +27,7 @@ class Homepage_Elementor {
         add_action('wp_ajax_force_update_check', [$this, 'ajax_force_update_check']);
         
         // Initialize updater
-        new Homepage_Elementor_Updater(__FILE__, '1.0.2');
+        new Homepage_Elementor_Updater(__FILE__, '1.0.3');
     }
     
     public function init() {
@@ -264,7 +264,8 @@ class Homepage_Elementor {
             return false;
         }
         
-        $plugin_dir = dirname(__FILE__);
+        $plugin_slug = dirname(plugin_basename(__FILE__));
+        $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
         $backup_dir = $plugin_dir . '_backup_' . time();
         
         // Backup current plugin
@@ -303,10 +304,18 @@ class Homepage_Elementor {
         // Force WordPress to recognize the new version
         wp_cache_flush();
         
-        // Update plugin version in options if needed
-        $new_plugin_data = get_plugin_data($plugin_dir . '/homepage-elementor.php');
-        if (isset($new_plugin_data['Version'])) {
-            update_option('homepage_elementor_version', $new_plugin_data['Version']);
+        // Force plugin data refresh
+        $plugin_file = $plugin_dir . '/homepage-elementor.php';
+        if (file_exists($plugin_file)) {
+            $new_plugin_data = get_plugin_data($plugin_file);
+            if (isset($new_plugin_data['Version'])) {
+                update_option('homepage_elementor_version', $new_plugin_data['Version']);
+                
+                // Update WordPress plugin cache
+                $plugin_basename = plugin_basename($plugin_file);
+                wp_cache_delete($plugin_basename, 'plugin_meta');
+                wp_cache_delete('plugins', 'plugins');
+            }
         }
         
         return true;

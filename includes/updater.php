@@ -19,6 +19,7 @@ class Homepage_Elementor_Updater {
         add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
         add_filter('plugins_api', [$this, 'plugin_info'], 20, 3);
         add_action('in_plugin_update_message-' . plugin_basename($this->plugin_file), [$this, 'plugin_update_message']);
+        add_action('upgrader_process_complete', [$this, 'after_plugin_update'], 10, 2);
         
         // Force check on admin pages
         if (is_admin()) {
@@ -34,7 +35,11 @@ class Homepage_Elementor_Updater {
         $plugin_slug = plugin_basename($this->plugin_file);
         $remote_version = $this->get_remote_version();
         
-        if (version_compare($this->version, $remote_version, '<')) {
+        // Get current version from file (not cached)
+        $current_plugin_data = get_plugin_data($this->plugin_file, false, false);
+        $current_version = $current_plugin_data['Version'];
+        
+        if (version_compare($current_version, $remote_version, '<')) {
             $transient->response[$plugin_slug] = (object) [
                 'slug' => dirname($plugin_slug),
                 'plugin' => $plugin_slug,
@@ -42,6 +47,9 @@ class Homepage_Elementor_Updater {
                 'url' => "https://github.com/{$this->repo}",
                 'package' => $this->get_download_url()
             ];
+        } else {
+            // Remove from response if up to date
+            unset($transient->response[$plugin_slug]);
         }
         
         return $transient;
@@ -109,5 +117,21 @@ class Homepage_Elementor_Updater {
     
     public function plugin_update_message($plugin_data) {
         echo '<br><strong>Update available from GitHub repository.</strong>';
+    }
+    
+    public function after_plugin_update($upgrader_object, $options) {
+        if ($options['action'] == 'update' && $options['type'] == 'plugin') {
+            $plugin_slug = plugin_basename($this->plugin_file);
+            
+            if (isset($options['plugins']) && in_array($plugin_slug, $options['plugins'])) {
+                // Clear all caches after update
+                delete_site_transient('update_plugins');
+                wp_cache_flush();
+                
+                // Force refresh plugin data
+                wp_cache_delete($plugin_slug, 'plugin_meta');
+                wp_cache_delete('plugins', 'plugins');
+            }
+        }
     }
 }
