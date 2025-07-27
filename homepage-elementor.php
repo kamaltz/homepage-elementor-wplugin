@@ -24,6 +24,7 @@ class Homepage_Elementor {
         add_action('wp_ajax_check_github_update', [$this, 'check_github_update']);
         add_action('wp_ajax_clear_update_cache', [$this, 'clear_update_cache']);
         add_action('wp_ajax_manual_update_plugin', [$this, 'manual_update_plugin']);
+        add_action('wp_ajax_force_update_check', [$this, 'ajax_force_update_check']);
         
         // Initialize updater
         new Homepage_Elementor_Updater(__FILE__, '1.0.2');
@@ -140,7 +141,15 @@ class Homepage_Elementor {
             <div id="update-status"></div>
             
             <h3>Debug Info</h3>
+            <p><strong>Plugin File:</strong> <?php echo plugin_basename(__FILE__); ?></p>
+            <p><strong>Plugin Directory:</strong> <?php echo dirname(__FILE__); ?></p>
+            <p><strong>Auto Update:</strong> <?php echo get_option('homepage_auto_update') ? 'Enabled' : 'Disabled'; ?></p>
+            <p><strong>Last Check:</strong> <?php 
+                $last_check = get_transient('homepage_elementor_last_check');
+                echo $last_check ? date('Y-m-d H:i:s', $last_check) : 'Never';
+            ?></p>
             <button type="button" id="clear-cache" class="button">Clear Update Cache</button>
+            <button type="button" id="force-check" class="button">Force Update Check</button>
             
             <script>
             jQuery(document).ready(function($) {
@@ -150,6 +159,15 @@ class Homepage_Elementor {
                         action: 'clear_update_cache'
                     }, function() {
                         alert('Cache cleared');
+                    });
+                });
+                
+                // Force check functionality
+                $('#force-check').click(function() {
+                    $.post(ajaxurl, {
+                        action: 'force_update_check'
+                    }, function() {
+                        alert('Update check forced. Check Plugins page.');
                     });
                 });
                 
@@ -282,6 +300,15 @@ class Homepage_Elementor {
         // Clean up
         $this->delete_directory($temp_dir);
         
+        // Force WordPress to recognize the new version
+        wp_cache_flush();
+        
+        // Update plugin version in options if needed
+        $new_plugin_data = get_plugin_data($plugin_dir . '/homepage-elementor.php');
+        if (isset($new_plugin_data['Version'])) {
+            update_option('homepage_elementor_version', $new_plugin_data['Version']);
+        }
+        
         return true;
     }
     
@@ -321,12 +348,32 @@ class Homepage_Elementor {
         $result = $this->download_and_install($download_url, $token);
         
         if ($result) {
-            // Clear cache
+            // Update plugin version in database
+            $plugin_file = plugin_basename(__FILE__);
+            $plugin_data = get_plugin_data(__FILE__);
+            
+            // Force refresh plugin data
+            wp_cache_delete('plugins', 'plugins');
+            
+            // Clear all update caches
             delete_site_transient('update_plugins');
-            wp_send_json_success("Successfully updated to version {$version}!");
+            delete_transient('plugin_slugs');
+            
+            // Trigger plugin data refresh
+            if (function_exists('wp_update_plugins')) {
+                wp_update_plugins();
+            }
+            
+            wp_send_json_success("Successfully updated to version {$version}! Please refresh the page.");
         } else {
             wp_send_json_error('Failed to update plugin');
         }
+    }
+    
+    public function ajax_force_update_check() {
+        delete_site_transient('update_plugins');
+        delete_transient('homepage_elementor_last_check');
+        wp_send_json_success('Update check forced');
     }
 }
 

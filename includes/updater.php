@@ -16,9 +16,13 @@ class Homepage_Elementor_Updater {
         $this->repo = get_option('homepage_github_repo');
         $this->token = get_option('homepage_github_token');
         
-        if (get_option('homepage_auto_update')) {
-            add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
-            add_filter('plugins_api', [$this, 'plugin_info'], 20, 3);
+        add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
+        add_filter('plugins_api', [$this, 'plugin_info'], 20, 3);
+        add_action('in_plugin_update_message-' . plugin_basename($this->plugin_file), [$this, 'plugin_update_message']);
+        
+        // Force check on admin pages
+        if (is_admin()) {
+            add_action('admin_init', [$this, 'force_update_check']);
         }
     }
     
@@ -86,5 +90,24 @@ class Homepage_Elementor_Updater {
     
     private function get_download_url() {
         return "https://api.github.com/repos/{$this->repo}/zipball/main";
+    }
+    
+    public function force_update_check() {
+        if (!$this->repo) return;
+        
+        // Check every hour
+        $last_check = get_transient('homepage_elementor_last_check');
+        if ($last_check && (time() - $last_check) < 3600) {
+            return;
+        }
+        
+        set_transient('homepage_elementor_last_check', time(), 3600);
+        
+        // Force update check
+        delete_site_transient('update_plugins');
+    }
+    
+    public function plugin_update_message($plugin_data) {
+        echo '<br><strong>Update available from GitHub repository.</strong>';
     }
 }
