@@ -23,6 +23,7 @@ class Homepage_Elementor {
         add_action('admin_init', [$this, 'register_settings']);
         add_action('wp_ajax_check_github_update', [$this, 'check_github_update']);
         add_action('wp_ajax_clear_update_cache', [$this, 'clear_update_cache']);
+        add_action('wp_ajax_manual_update_plugin', [$this, 'manual_update_plugin']);
         
         // Initialize updater
         new Homepage_Elementor_Updater(__FILE__, '1.0.0');
@@ -155,6 +156,27 @@ class Homepage_Elementor {
                         action: 'check_github_update'
                     }, function(response) {
                         $('#update-status').html(response.data);
+                        
+                        // Bind manual update button
+                        $('#manual-update').click(function() {
+                            var version = $(this).data('version');
+                            $(this).prop('disabled', true).text('Updating...');
+                            
+                            $.post(ajaxurl, {
+                                action: 'manual_update_plugin',
+                                version: version
+                            }, function(response) {
+                                if (response.success) {
+                                    $('#update-status').html('<div class="notice notice-success"><p>' + response.data + '</p></div>');
+                                    setTimeout(function() {
+                                        location.reload();
+                                    }, 2000);
+                                } else {
+                                    $('#update-status').html('<div class="notice notice-error"><p>' + response.data + '</p></div>');
+                                    $('#manual-update').prop('disabled', false).text('Update Now');
+                                }
+                            });
+                        });
                     });
                 });
             });
@@ -188,15 +210,27 @@ class Homepage_Elementor {
         $current_version = get_plugin_data(__FILE__)['Version'];
         $remote_version = ltrim($release['tag_name'], 'v');
         
-        wp_send_json_success(sprintf(
-            'Current: v%s, Remote: v%s. %s',
-            $current_version,
-            $remote_version,
-            version_compare($remote_version, $current_version, '>') ? 'Update available!' : 'Up to date.'
-        ));
+        if (version_compare($remote_version, $current_version, '>')) {
+            wp_send_json_success(sprintf(
+                'Update available! Current: v%s → Remote: v%s. <button id="manual-update" class="button button-primary" data-version="%s">Update Now</button>',
+                $current_version,
+                $remote_version,
+                $remote_version
+            ));
+        } else {
+            wp_send_json_success(sprintf(
+                'Plugin is up to date. Current: v%s, Remote: v%s',
+                $current_version,
+                $remote_version
+            ));
+        }
     }
     
     private function download_and_install($zip_url, $token = '') {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
+        require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
+        
         $args = ['timeout' => 300];
         if ($token) {
             $args['headers'] = ['Authorization' => 'token ' . $token];
@@ -208,23 +242,87 @@ class Homepage_Elementor {
             return false;
         }
         
-        $plugin_dir = WP_PLUGIN_DIR . '/homepage-elementor';
+        $plugin_dir = dirname(__FILE__);
+        $backup_dir = $plugin_dir . '_backup_' . time();
         
         // Backup current plugin
         if (is_dir($plugin_dir)) {
-            rename($plugin_dir, $plugin_dir . '_backup_' . time());
+            rename($plugin_dir, $backup_dir);
         }
         
-        // Extract new version
-        $unzip = unzip_file($temp_file, WP_PLUGIN_DIR);
+        // Create temp extraction directory
+        $temp_dir = WP_CONTENT_DIR . '/temp_plugin_' . time();
+        wp_mkdir_p($temp_dir);
+        
+        // Extract to temp directory
+        $unzip = unzip_file($temp_file, $temp_dir);
         unlink($temp_file);
         
-        return !is_wp_error($unzip);
+        if (is_wp_error($unzip)) {
+            // Restore backup
+            if (is_dir($backup_dir)) {
+                rename($backup_dir, $plugin_dir);
+            }
+            return false;
+        }
+        
+        // Find extracted folder (GitHub creates folder with repo name)
+        $extracted_folders = glob($temp_dir . '/*', GLOB_ONLYDIR);
+        if (empty($extracted_folders)) {
+            return false;
+        }
+        
+        // Move extracted content to plugin directory
+        rename($extracted_folders[0], $plugin_dir);
+        
+        // Clean up
+        $this->delete_directory($temp_dir);
+        
+        return true;
+    }
+    
+    private function delete_directory($dir) {
+        if (!is_dir($dir)) return;
+        
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . '/' . $file;
+            is_dir($path) ? $this->delete_directory($path) : unlink($path);
+        }
+        rmdir($dir);
     }
     
     public function clear_update_cache() {
         delete_site_transient('update_plugins');
         wp_send_json_success('Cache cleared');
+    }
+    
+    public function manual_update_plugin() {
+        if (!current_user_can('update_plugins')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $repo = get_option('homepage_github_repo');
+        $token = get_option('homepage_github_token');
+        $version = sanitize_text_field($_POST['version']);
+        
+        if (!$repo) {
+            wp_send_json_error('GitHub repository not configured');
+        }
+        
+        // Get download URL
+        $download_url = "https://api.github.com/repos/{$repo}/zipball/v{$version}";
+        
+        // Download and install
+        $result = $this->download_and_install($download_url, $token);
+        
+        if ($result) {
+            // Clear cache
+            delete_site_transient('update_plugins');
+            wp_send_json_success("Successfully updated to version {$version}!");
+        } else {
+            wp_send_json_error('Failed to update plugin');
+        }
     }
 }
 

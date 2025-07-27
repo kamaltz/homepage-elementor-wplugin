@@ -23,15 +23,17 @@ class Homepage_Elementor_Updater {
     }
     
     public function check_for_update($transient) {
-        if (empty($transient->checked)) {
+        if (empty($transient->checked) || !$this->repo) {
             return $transient;
         }
         
+        $plugin_slug = plugin_basename($this->plugin_file);
         $remote_version = $this->get_remote_version();
         
         if (version_compare($this->version, $remote_version, '<')) {
-            $transient->response[$this->plugin_file] = (object) [
-                'slug' => dirname($this->plugin_file),
+            $transient->response[$plugin_slug] = (object) [
+                'slug' => dirname($plugin_slug),
+                'plugin' => $plugin_slug,
                 'new_version' => $remote_version,
                 'url' => "https://github.com/{$this->repo}",
                 'package' => $this->get_download_url()
@@ -42,13 +44,15 @@ class Homepage_Elementor_Updater {
     }
     
     public function plugin_info($result, $action, $args) {
-        if ($action !== 'plugin_information' || $args->slug !== dirname($this->plugin_file)) {
+        $plugin_slug = dirname(plugin_basename($this->plugin_file));
+        
+        if ($action !== 'plugin_information' || $args->slug !== $plugin_slug) {
             return $result;
         }
         
         return (object) [
             'name' => 'Homepage Elementor',
-            'slug' => dirname($this->plugin_file),
+            'slug' => $plugin_slug,
             'version' => $this->get_remote_version(),
             'author' => 'kamaltz',
             'homepage' => "https://github.com/{$this->repo}",
