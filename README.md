@@ -1,126 +1,91 @@
 # Homepage Elementor Plugin
 
-Plugin homepage editor untuk Elementor dengan widget-widget khusus untuk membuat homepage yang menarik dan responsif.
+**Dibuat oleh: kamaltz**
 
-## Fitur
+Plugin Elementor khusus untuk membuat homepage yang profesional dan responsif dengan 4 widget custom yang siap pakai.
 
-### Widget yang Tersedia:
-1. **Category Banner** - Slider banner kategori dengan gambar desktop dan mobile
-2. **Steps Section** - Section langkah-langkah dengan nomor dan deskripsi
-3. **Follow Us** - Section follow us dengan gambar dan tombol
-4. **Footer Section** - Footer dengan menu dan social media
+## Widget yang Tersedia
 
-### Fitur Kustomisasi:
-- ✅ Kustomisasi konten (gambar, caption, deskripsi)
-- ✅ Kustomisasi jumlah gambar/item
-- ✅ Link caption dapat diarahkan ke page yang sudah ada
-- ✅ Kustomisasi style (warna, typography, spacing)
-- ✅ Kustomisasi advance setting Elementor
-- ✅ Responsive design
-- ✅ Slider dengan navigasi custom
+### 1. Category Banner
+Slider banner kategori dengan dukungan gambar terpisah untuk desktop dan mobile, dilengkapi navigasi custom.
+
+### 2. Steps Section  
+Section untuk menampilkan langkah-langkah proses dengan nomor urut dan deskripsi yang dapat dikustomisasi.
+
+### 3. Follow Us
+Section call-to-action untuk social media dengan banner image dan tombol yang dapat disesuaikan.
+
+### 4. Footer Section
+Footer lengkap dengan menu navigasi dan link social media, mendukung HTML untuk konten yang lebih fleksibel.
 
 ## Instalasi
 
-1. Upload folder `homepage-elementor` ke direktori `/wp-content/plugins/`
-2. Aktifkan plugin melalui menu 'Plugins' di WordPress admin
-3. Pastikan plugin Elementor sudah terinstall dan aktif
-4. Widget akan muncul di kategori "Homepage Elements" di Elementor editor
+1. Upload folder plugin ke `/wp-content/plugins/`
+2. Aktifkan melalui menu Plugins di WordPress admin
+3. Pastikan Elementor sudah aktif
+4. Widget tersedia di kategori "Homepage Elements"
 
-## Penggunaan
+## Cara Penggunaan
 
-### 1. Category Banner Widget
-- Tambahkan widget "Category Banner" ke halaman
-- Upload gambar untuk desktop dan mobile
-- Atur title dan subtitle
-- Tambahkan link untuk setiap banner
-- Kustomisasi style sesuai kebutuhan
+### Category Banner
+1. Drag widget ke halaman Elementor
+2. Upload gambar desktop dan mobile
+3. Atur title, subtitle, dan link
+4. Sesuaikan style di tab Style
 
-### 2. Steps Section Widget
-- Tambahkan widget "Steps Section"
-- Atur main title
-- Tambahkan langkah-langkah dengan nomor dan deskripsi
-- Kustomisasi warna dan typography
+### Steps Section
+1. Tambahkan widget ke halaman
+2. Atur judul utama
+3. Tambah/edit langkah dengan nomor dan deskripsi
+4. Kustomisasi warna dan typography
 
-### 3. Follow Us Widget
-- Tambahkan widget "Follow Us"
-- Atur title dan button text
-- Upload banner image
-- Tambahkan link social media
-- Kustomisasi style
+### Follow Us
+1. Masukkan widget ke halaman
+2. Upload banner image
+3. Atur title dan text tombol
+4. Tambahkan link social media
 
-### 4. Footer Section Widget
-- Tambahkan widget "Footer Section"
-- Atur footer title dengan HTML support
-- Tambahkan menu footer
-- Atur social media link
-- Kustomisasi style
+### Footer Section
+1. Tambahkan ke area footer
+2. Atur title (mendukung HTML)
+3. Buat menu footer
+4. Tambahkan link social media
 
-## Kustomisasi Style
+## Fitur Kustomisasi
 
-Setiap widget memiliki tab "Style" dengan opsi:
+**Style Options:**
 - Warna teks dan background
-- Typography (font family, size, weight)
+- Typography lengkap
 - Spacing dan padding
 - Hover effects
 - Responsive settings
 
-## Kustomisasi Advanced
-
-Setiap widget mendukung:
+**Advanced Settings:**
 - Custom CSS classes
-- Motion effects
+- Motion effects Elementor
 - Background options
 - Border dan shadow
 - Responsive visibility
-- Custom attributes
 
-## File Structure
-
-```
-homepage-elementor/
-├── homepage-elementor.php (Main plugin file)
-├── widgets/
-│   ├── category-banner.php
-│   ├── steps-section.php
-│   ├── follow-us.php
-│   └── footer-section.php
-├── assets/
-│   ├── css/
-│   │   └── homepage.css
-│   └── js/
-│       └── homepage.js
-└── README.md
-```
-
-## Dependencies
+## Requirements
 
 - WordPress 5.0+
 - Elementor 3.0+
-- jQuery
-- Slick Carousel (loaded via CDN)
+- jQuery (included)
+- Slick Carousel (auto-loaded)
 
 ## Browser Support
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-- Mobile browsers
+Semua browser modern termasuk mobile browsers.
 
-## Changelog
+## Version 1.0.0
 
-### Version 1.0.0
-- Initial release
-- 4 custom widgets
-- Responsive design
-- Slider functionality
-- Style customization
-- Advanced Elementor settings
+- 4 widget custom siap pakai
+- Responsive design otomatis
+- Slider dengan navigasi
+- Kustomisasi style lengkap
+- Integrasi penuh dengan Elementor
 
-## Support
+---
 
-Untuk dukungan dan pertanyaan, silakan hubungi developer atau buat issue di repository.
-
-## License
-
-GPL v2 or later
+**Developed by kamaltz**

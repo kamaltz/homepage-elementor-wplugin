@@ -3,7 +3,7 @@
  * Plugin Name: Homepage Elementor
  * Description: Plugin homepage editor untuk Elementor dengan elemen kustomisasi lengkap
  * Version: 1.0.0
- * Author: Your Name
+ * Author: kamaltz
  */
 
 if (!defined('ABSPATH')) {
