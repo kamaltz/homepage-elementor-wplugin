@@ -3,7 +3,6 @@ name: Deploy Plugin
 on:
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
 
@@ -22,25 +21,62 @@ jobs:
         test -d widgets
         test -d assets
 
-  build:
+  version:
     needs: test
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Get current version
+      id: current
+      run: |
+        VERSION=$(grep "Version:" homepage-elementor.php | head -1 | awk '{print $3}')
+        echo "current_version=$VERSION" >> $GITHUB_OUTPUT
+    
+    - name: Increment version
+      id: version
+      run: |
+        CURRENT="${{ steps.current.outputs.current_version }}"
+        IFS='.' read -ra PARTS <<< "$CURRENT"
+        PATCH=$((${PARTS[2]} + 1))
+        NEW_VERSION="${PARTS[0]}.${PARTS[1]}.$PATCH"
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+    
+    - name: Update version in files
+      run: |
+        sed -i "s/Version: .*/Version: ${{ steps.version.outputs.new_version }}/" homepage-elementor.php
+        sed -i "s/new Homepage_Elementor_Updater(__FILE__, '[^']*')/new Homepage_Elementor_Updater(__FILE__, '${{ steps.version.outputs.new_version }}')/" homepage-elementor.php
+        sed -i "s/## Version .*/## Version ${{ steps.version.outputs.new_version }}/" README.md
+    
+    - name: Commit version bump
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Bump version to ${{ steps.version.outputs.new_version }}"
+        git tag "v${{ steps.version.outputs.new_version }}"
+        git push
+        git push --tags
+
+  build:
+    needs: version
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
       with:
-        node-version: '16'
-    
-    - name: Update version in files
-      run: node scripts/bump-version.js ${{ github.ref_name }}
+        ref: main
     
     - name: Create plugin zip
       run: |
-        zip -r homepage-elementor-${{ github.ref_name }}.zip . \
+        zip -r homepage-elementor-${{ needs.version.outputs.new_version }}.zip . \
           -x "*.git*" "*.github*" "*.md" "*.txt" "node_modules/*" "scripts/*"
     
     - name: Create Release
@@ -48,8 +84,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
+        tag_name: v${{ needs.version.outputs.new_version }}
+        release_name: Release v${{ needs.version.outputs.new_version }}
         draft: false
         prerelease: false
     
@@ -59,18 +95,18 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./homepage-elementor-${{ github.ref_name }}.zip
-        asset_name: homepage-elementor-${{ github.ref_name }}.zip
+        asset_path: ./homepage-elementor-${{ needs.version.outputs.new_version }}.zip
+        asset_name: homepage-elementor-${{ needs.version.outputs.new_version }}.zip
         asset_content_type: application/zip
 
   notify:
-    needs: build
+    needs: [version, build]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.ref == 'refs/heads/main'
     
     steps:
     - name: Notify WordPress sites
       run: |
         curl -X POST "${{ secrets.WEBHOOK_URL }}" \
           -H "Content-Type: application/json" \
-          -d '{"version": "${{ github.ref_name }}", "repo": "${{ github.repository }}"}'
+          -d '{"version": "${{ needs.version.outputs.new_version }}", "repo": "${{ github.repository }}"}'

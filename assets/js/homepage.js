@@ -12,6 +12,9 @@ jQuery(document).ready(function($) {
                 $slider.slick('unslick');
             }
             
+            const $banner = $slider.closest('.category--banner');
+            const arrowPosition = $banner.data('arrow-position') || 'bottom-right';
+            
             $slider.slick({
                 dots: false,
                 infinite: true,
@@ -19,9 +22,9 @@ jQuery(document).ready(function($) {
                 slidesToScroll: slidesToScroll,
                 autoplay: true,
                 autoplaySpeed: 4000,
-                arrows: true,
-                prevArrow: $slider.closest('.category--banner').find('.slick-prev'),
-                nextArrow: $slider.closest('.category--banner').find('.slick-next'),
+                arrows: $banner.find('.category--banner-nav').length > 0,
+                prevArrow: $banner.find('.slick-prev'),
+                nextArrow: $banner.find('.slick-next'),
                 responsive: [
                     {
                         breakpoint: 768,
@@ -34,6 +37,9 @@ jQuery(document).ready(function($) {
                     }
                 ]
             });
+            
+            // Apply positioning class after initialization
+            $banner.addClass('arrow-position-' + arrowPosition);
         });
     }
     
