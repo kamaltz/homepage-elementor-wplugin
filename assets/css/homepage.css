@@ -61,80 +61,73 @@
 
 .category--banner-nav {
     position: absolute;
-    bottom: 4.994vh;
-    right: 0;
-    z-index: 10;
+    bottom: 40px;
+    right: 20px;
+    z-index: 100;
 }
 
 .nav--prev-next {
     display: flex;
     align-items: center;
-    gap: 0.794vw;
-}
-
-.slick-arrow {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition: 0.5s ease;
-}
-
-.slick-arrow svg {
-    background-color: transparent;
-    border-radius: 100px;
-    transition: 0.5s ease;
-}
-
-.slick-arrow:hover svg {
-    background-color: #fff;
-}
-
-.slick-arrow:hover svg path {
-    fill: #000;
-    transition: 0.5s ease;
-}
-
-@media (max-width: 640px) {
-    .category--banner-nav {
-        left: 0;
-        bottom: 3.521vh;
-    }
-    
-    .nav--prev-next {
-        gap: 1.527vw;
-    }
-    
-    .nav--prev-next .slick-arrow svg {
-        width: 7.125vw;
-        height: 7.125vw;
-    }
-}
-
-.nav--prev-next {
-    display: flex;
     gap: 10px;
 }
 
 .slick-arrow {
-    background: none;
-    border: none;
+    background: rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.8);
+    border-radius: 50%;
     cursor: pointer;
     padding: 0;
     width: 57px;
     height: 57px;
-    opacity: 0.8;
-    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    outline: none;
 }
 
 .slick-arrow:hover {
-    opacity: 1;
+    background: rgba(255,255,255,0.9);
+    border-color: rgba(255,255,255,1);
+    transform: scale(1.1);
+}
+
+.slick-arrow:hover svg path {
+    stroke: #000;
 }
 
 .slick-arrow svg {
-    width: 100%;
-    height: 100%;
+    width: 24px;
+    height: 24px;
+    transition: all 0.3s ease;
 }
+
+.slick-arrow svg path {
+    stroke: #fff;
+    stroke-width: 2;
+    fill: none;
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .category--banner-nav {
+        display: none;
+    }
+    
+    .category--banner-list .slick-dots {
+        display: block !important;
+        bottom: 20px;
+        text-align: center;
+    }
+    
+    .category--banner-item {
+        height: 60vh;
+        min-height: 400px;
+    }
+}
+
+
 
 /* Steps Section Styles */
 .step--on {
@@ -398,8 +391,40 @@
 
 .category--banner-list .slick-slide {
     outline: none;
+    height: auto;
 }
 
 .category--banner-list .slick-dots {
-    display: none !important;
+    bottom: 20px;
+    z-index: 10;
+}
+
+.category--banner-list .slick-dots li button:before {
+    color: white;
+    font-size: 12px;
+    opacity: 0.5;
+}
+
+.category--banner-list .slick-dots li.slick-active button:before {
+    opacity: 1;
+}
+
+/* Fix for widget visibility */
+.elementor-widget-category_banner,
+.elementor-widget-steps_section,
+.elementor-widget-follow_us,
+.elementor-widget-footer_section {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Ensure proper loading */
+.category--banner-list:not(.slick-initialized) {
+    display: flex;
+    overflow-x: auto;
+}
+
+.category--banner-list:not(.slick-initialized) .category--banner-item {
+    flex: 0 0 50%;
+    min-width: 300px;
 }

@@ -7,6 +7,11 @@ jQuery(document).ready(function($) {
             const slidesToShow = parseInt($slider.data('slides-show')) || 2;
             const slidesToScroll = parseInt($slider.data('slides-scroll')) || 1;
             
+            // Destroy existing slider if initialized
+            if ($slider.hasClass('slick-initialized')) {
+                $slider.slick('unslick');
+            }
+            
             $slider.slick({
                 dots: false,
                 infinite: true,
@@ -14,25 +19,28 @@ jQuery(document).ready(function($) {
                 slidesToScroll: slidesToScroll,
                 autoplay: true,
                 autoplaySpeed: 4000,
-                prevArrow: $slider.closest('.category--banner').find('.category--banner-nav .slick-prev'),
-                nextArrow: $slider.closest('.category--banner').find('.category--banner-nav .slick-next'),
+                arrows: true,
+                prevArrow: $slider.closest('.category--banner').find('.slick-prev'),
+                nextArrow: $slider.closest('.category--banner').find('.slick-next'),
                 responsive: [
                     {
-                        breakpoint: 641,
+                        breakpoint: 768,
                         settings: {
                             slidesToShow: 1,
+                            slidesToScroll: 1,
+                            arrows: false,
                             dots: true
                         }
                     }
                 ]
             });
         });
-        
-
     }
     
-    // Initialize on page load
-    initCategoryBanner();
+    // Initialize on page load with delay
+    setTimeout(function() {
+        initCategoryBanner();
+    }, 100);
     
     // Initialize Steps Section Slider for mobile
     function initStepsSection() {
@@ -63,14 +71,22 @@ jQuery(document).ready(function($) {
     // Reinitialize when Elementor editor updates
     if (typeof elementorFrontend !== 'undefined') {
         elementorFrontend.hooks.addAction('frontend/element_ready/category_banner.default', function($scope) {
-            $scope.find('.category--banner-list').slick('unslick');
-            initCategoryBanner();
+            setTimeout(function() {
+                initCategoryBanner();
+            }, 100);
         });
         
         elementorFrontend.hooks.addAction('frontend/element_ready/steps_section.default', function($scope) {
             initStepsSection();
         });
     }
+    
+    // Also initialize on window load for better compatibility
+    $(window).on('load', function() {
+        setTimeout(function() {
+            initCategoryBanner();
+        }, 500);
+    });
     
     // Responsive image handling
     function handleResponsiveImages() {

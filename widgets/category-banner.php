@@ -209,21 +209,17 @@ class Category_Banner_Widget extends \Elementor\Widget_Base {
                     <?php endforeach; ?>
                 </div>
                 <div class="category--banner-nav">
-                    <div class="Container">
-                        <div class="nav--prev-next">
-                            <button class="slick-prev slick-arrow">
-                                <svg width="57" height="57" viewBox="0 0 57 57" fill="none">
-                                    <circle cx="28.5" cy="28.5" r="28" stroke="white" fill="rgba(0,0,0,0.3)"/>
-                                    <path d="M32 20L24 28L32 36" stroke="white" stroke-width="2" fill="none"/>
-                                </svg>
-                            </button>
-                            <button class="slick-next slick-arrow">
-                                <svg width="57" height="57" viewBox="0 0 57 57" fill="none">
-                                    <circle cx="28.5" cy="28.5" r="28" stroke="white" fill="rgba(0,0,0,0.3)"/>
-                                    <path d="M25 20L33 28L25 36" stroke="white" stroke-width="2" fill="none"/>
-                                </svg>
-                            </button>
-                        </div>
+                    <div class="nav--prev-next">
+                        <button class="slick-prev slick-arrow" type="button">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button class="slick-next slick-arrow" type="button">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
