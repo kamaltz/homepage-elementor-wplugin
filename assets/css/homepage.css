@@ -61,15 +61,84 @@
 
 .category--banner-nav {
     position: absolute;
-    bottom: 40px;
-    right: 20px;
     z-index: 100;
+    pointer-events: none;
 }
 
 .nav--prev-next {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
+    pointer-events: auto;
+}
+
+/* Arrow Positioning */
+.category--banner[data-arrow-position="bottom-right"] .category--banner-nav {
+    bottom: 40px;
+    right: 40px;
+}
+
+.category--banner[data-arrow-position="bottom-left"] .category--banner-nav {
+    bottom: 40px;
+    left: 40px;
+}
+
+.category--banner[data-arrow-position="bottom-center"] .category--banner-nav {
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.category--banner[data-arrow-position="center-sides"] .category--banner-nav {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    padding: 0 40px;
+}
+
+.category--banner[data-arrow-position="center-sides"] .nav--prev-next {
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Caption Positioning */
+.category--banner[data-caption-position="bottom-left"] .category--banner-content {
+    text-align: left;
+}
+
+.category--banner[data-caption-position="bottom-center"] .category--banner-content {
+    text-align: center;
+}
+
+.category--banner[data-caption-position="bottom-right"] .category--banner-content {
+    text-align: right;
+}
+
+.category--banner[data-caption-position="center-left"] .category--banner-content {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    text-align: left;
+    padding: 40px 0;
+}
+
+.category--banner[data-caption-position="center-center"] .category--banner-content {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    text-align: center;
+    padding: 40px 0;
+}
+
+.category--banner[data-caption-position="center-right"] .category--banner-content {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    text-align: right;
+    padding: 40px 0;
 }
 
 .slick-arrow {
@@ -129,57 +198,78 @@
 
 
 
-/* Steps Section Styles */
+/* Steps Section Styles - orpcatalog.id style */
 .step--on {
-    padding: 80px 0;
-    background: #f8f8f8;
+    padding: 100px 0;
+    background: #ffffff;
 }
 
 .step--title {
     text-align: center;
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 60px;
-    color: #000;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 80px;
+    color: #1a1a1a;
+    line-height: 1.2;
 }
 
 .step--on-list {
-    display: flex;
-    flex-wrap: wrap;
-    margin-left: -1.984vw;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .step--on-item {
-    width: 25%;
-    padding-left: 1.984vw;
+    text-align: center;
+    padding: 30px 20px;
+    position: relative;
+}
+
+.step--on-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 30px;
+    right: -20px;
+    width: 40px;
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 1;
 }
 
 .step--on-content {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
 
 .step--on-number {
-    width: 2.381vw;
-    height: 2.381vw;
-    background-color: #ffb800;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.7vw;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .step--on-detail {
-    width: calc(100% - 3.5vw);
-    font-size: 1.323vw;
+    text-align: center;
 }
 
 .step--on-detail p {
     margin: 0;
     line-height: 1.6;
     color: #666;
+    font-size: 16px;
 }
 
 /* Follow Us Section Styles */
@@ -330,26 +420,23 @@
     }
     
     .step--on-list {
-        margin-left: -5.089vw;
-        padding: 0 8.906vw;
-        overflow: hidden;
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 0 20px;
     }
     
-    .step--on-item {
-        width: 57.252vw;
-        padding-left: 5.089vw;
-        transition: 0.3s ease;
+    .step--on-item::after {
+        display: none;
     }
     
     .step--on-number {
-        width: 5.089vw;
-        height: 5.089vw;
-        font-size: 5.089vw;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
     }
     
-    .step--on-detail {
-        font-size: 3.817vw;
-        width: calc(100% - 7.634vw);
+    .step--on-detail p {
+        font-size: 14px;
     }
     
     .follow--us-content {

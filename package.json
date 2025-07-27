@@ -1,0 +1,17 @@
+{
+  "name": "homepage-elementor-wplugin",
+  "version": "1.0.0",
+  "description": "Plugin homepage editor untuk Elementor dengan elemen kustomisasi lengkap",
+  "scripts": {
+    "version:patch": "node scripts/bump-version.js",
+    "release:patch": "npm run version:patch && git add . && git commit -m 'Bump version' && git tag v$(node -p 'require(\"./package.json\").version') && git push && git push --tags",
+    "release:minor": "npm version minor && npm run release:patch",
+    "release:major": "npm version major && npm run release:patch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/homepage-elementor-wplugin.git"
+  },
+  "author": "kamaltz",
+  "license": "GPL-2.0"
+}

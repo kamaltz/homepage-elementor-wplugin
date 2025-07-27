@@ -1,0 +1,76 @@
+name: Deploy Plugin
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Validate PHP syntax
+      run: find . -name "*.php" -exec php -l {} \;
+    
+    - name: Check file structure
+      run: |
+        test -f homepage-elementor.php
+        test -d widgets
+        test -d assets
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+    
+    - name: Update version in files
+      run: node scripts/bump-version.js ${{ github.ref_name }}
+    
+    - name: Create plugin zip
+      run: |
+        zip -r homepage-elementor-${{ github.ref_name }}.zip . \
+          -x "*.git*" "*.github*" "*.md" "*.txt" "node_modules/*" "scripts/*"
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./homepage-elementor-${{ github.ref_name }}.zip
+        asset_name: homepage-elementor-${{ github.ref_name }}.zip
+        asset_content_type: application/zip
+
+  notify:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Notify WordPress sites
+      run: |
+        curl -X POST "${{ secrets.WEBHOOK_URL }}" \
+          -H "Content-Type: application/json" \
+          -d '{"version": "${{ github.ref_name }}", "repo": "${{ github.repository }}"}'

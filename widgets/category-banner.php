@@ -112,6 +112,50 @@ class Category_Banner_Widget extends \Elementor\Widget_Base {
             ]
         );
         
+        $this->add_control(
+            'show_arrows',
+            [
+                'label' => 'Show Arrows',
+                'type' => \Elementor\Controls_Manager::SWITCHER,
+                'default' => 'yes',
+            ]
+        );
+        
+        $this->add_control(
+            'arrow_position',
+            [
+                'label' => 'Arrow Position',
+                'type' => \Elementor\Controls_Manager::SELECT,
+                'default' => 'bottom-right',
+                'options' => [
+                    'bottom-right' => 'Bottom Right',
+                    'bottom-left' => 'Bottom Left',
+                    'bottom-center' => 'Bottom Center',
+                    'center-sides' => 'Center Sides',
+                ],
+                'condition' => [
+                    'show_arrows' => 'yes',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'caption_position',
+            [
+                'label' => 'Caption Position',
+                'type' => \Elementor\Controls_Manager::SELECT,
+                'default' => 'bottom-left',
+                'options' => [
+                    'bottom-left' => 'Bottom Left',
+                    'bottom-center' => 'Bottom Center',
+                    'bottom-right' => 'Bottom Right',
+                    'center-left' => 'Center Left',
+                    'center-center' => 'Center Center',
+                    'center-right' => 'Center Right',
+                ],
+            ]
+        );
+        
         $this->end_controls_section();
         
         // Style Section
@@ -166,12 +210,106 @@ class Category_Banner_Widget extends \Elementor\Widget_Base {
         );
         
         $this->end_controls_section();
+        
+        // Arrow Style Section
+        $this->start_controls_section(
+            'arrow_style_section',
+            [
+                'label' => 'Arrow Style',
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+                'condition' => [
+                    'show_arrows' => 'yes',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'arrow_size',
+            [
+                'label' => 'Arrow Size',
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'range' => [
+                    'px' => [
+                        'min' => 30,
+                        'max' => 100,
+                    ],
+                ],
+                'default' => [
+                    'size' => 57,
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .slick-arrow' => 'width: {{SIZE}}px; height: {{SIZE}}px;',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'arrow_color',
+            [
+                'label' => 'Arrow Color',
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#ffffff',
+                'selectors' => [
+                    '{{WRAPPER}} .slick-arrow svg path' => 'stroke: {{VALUE}};',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'arrow_bg_color',
+            [
+                'label' => 'Arrow Background',
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => 'rgba(0,0,0,0.3)',
+                'selectors' => [
+                    '{{WRAPPER}} .slick-arrow' => 'background: {{VALUE}};',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'arrow_border_color',
+            [
+                'label' => 'Arrow Border',
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => 'rgba(255,255,255,0.8)',
+                'selectors' => [
+                    '{{WRAPPER}} .slick-arrow' => 'border-color: {{VALUE}};',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'arrow_hover_bg',
+            [
+                'label' => 'Arrow Hover Background',
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => 'rgba(255,255,255,0.9)',
+                'selectors' => [
+                    '{{WRAPPER}} .slick-arrow:hover' => 'background: {{VALUE}};',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'arrow_hover_color',
+            [
+                'label' => 'Arrow Hover Color',
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#000000',
+                'selectors' => [
+                    '{{WRAPPER}} .slick-arrow:hover svg path' => 'stroke: {{VALUE}};',
+                ],
+            ]
+        );
+        
+        $this->end_controls_section();
     }
     
     protected function render() {
         $settings = $this->get_settings_for_display();
         ?>
-        <section class="category--banner">
+        <section class="category--banner" data-arrow-position="<?php echo esc_attr($settings['arrow_position']); ?>" data-caption-position="<?php echo esc_attr($settings['caption_position']); ?>">
             <div class="category--banner-wrapper">
                 <div class="category--banner-list" data-slides-show="<?php echo esc_attr($settings['slides_to_show']); ?>" data-slides-scroll="<?php echo esc_attr($settings['slides_to_scroll']); ?>">
                     <?php foreach ($settings['banners'] as $banner) : ?>
@@ -208,6 +346,7 @@ class Category_Banner_Widget extends \Elementor\Widget_Base {
                         </div>
                     <?php endforeach; ?>
                 </div>
+                <?php if ($settings['show_arrows'] === 'yes') : ?>
                 <div class="category--banner-nav">
                     <div class="nav--prev-next">
                         <button class="slick-prev slick-arrow" type="button">
@@ -222,6 +361,7 @@ class Category_Banner_Widget extends \Elementor\Widget_Base {
                         </button>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
         </section>
         <?php
