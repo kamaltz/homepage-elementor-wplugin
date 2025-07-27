@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Homepage Elementor
  * Description: Plugin homepage editor untuk Elementor dengan elemen kustomisasi lengkap
- * Version: 1.0.4
+ * Version: 1.0.5
  * Author: kamaltz
  */
 
@@ -24,10 +24,10 @@ class Homepage_Elementor {
         add_action('wp_ajax_check_github_update', [$this, 'check_github_update']);
         add_action('wp_ajax_clear_update_cache', [$this, 'clear_update_cache']);
         add_action('wp_ajax_manual_update_plugin', [$this, 'manual_update_plugin']);
-        add_action('wp_ajax_force_update_check', [$this, 'ajax_force_update_check']);
+        add_action('wp_ajax_clear_update_notification', [$this, 'clear_update_notification']);
         
         // Initialize updater
-        new Homepage_Elementor_Updater(__FILE__, '1.0.4');
+        new Homepage_Elementor_Updater(__FILE__, '1.0.5');
     }
     
     public function init() {
@@ -154,13 +154,13 @@ class Homepage_Elementor {
             ?></p>
             <p><strong>Version Check:</strong> 
                 File: <?php echo get_plugin_data(__FILE__)['Version']; ?> | 
-                Constructor: <?php 
-                    $updater = new Homepage_Elementor_Updater(__FILE__, '1.0.4');
-                    echo '1.0.4';
-                ?>
+                Constructor: 1.0.5
+            </p>
+            <p><strong>Auto-Update Status:</strong> 
+                <?php echo get_option('homepage_auto_update') ? 'Enabled (notifications will show)' : 'Disabled (manual only)'; ?>
             </p>
             <button type="button" id="clear-cache" class="button">Clear Update Cache</button>
-            <button type="button" id="force-check" class="button">Force Update Check</button>
+            <button type="button" id="clear-notification" class="button button-secondary">Clear Update Notification</button>
             
             <script>
             jQuery(document).ready(function($) {
@@ -173,12 +173,12 @@ class Homepage_Elementor {
                     });
                 });
                 
-                // Force check functionality
-                $('#force-check').click(function() {
+                // Clear notification functionality
+                $('#clear-notification').click(function() {
                     $.post(ajaxurl, {
-                        action: 'force_update_check'
+                        action: 'clear_update_notification'
                     }, function() {
-                        alert('Update check forced. Check Plugins page.');
+                        alert('Update notification cleared.');
                     });
                 });
                 
@@ -390,10 +390,12 @@ class Homepage_Elementor {
         }
     }
     
-    public function ajax_force_update_check() {
+    public function clear_update_notification() {
         delete_site_transient('update_plugins');
         delete_transient('homepage_elementor_last_check');
-        wp_send_json_success('Update check forced');
+        delete_transient('homepage_elementor_updated');
+        wp_cache_flush();
+        wp_send_json_success('Update notification cleared');
     }
 }
 
