@@ -1,0 +1,81 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version increment type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.PAT_TOKEN }}
+    
+    - name: Get current version
+      id: current
+      run: |
+        VERSION=$(grep "Version:" homepage-elementor.php | head -1 | awk '{print $3}')
+        echo "current_version=$VERSION" >> $GITHUB_OUTPUT
+    
+    - name: Increment version
+      id: version
+      run: |
+        CURRENT="${{ steps.current.outputs.current_version }}"
+        IFS='.' read -ra PARTS <<< "$CURRENT"
+        
+        case "${{ github.event.inputs.version_type }}" in
+          "major")
+            NEW_VERSION="$((${PARTS[0]} + 1)).0.0"
+            ;;
+          "minor")
+            NEW_VERSION="${PARTS[0]}.$((${PARTS[1]} + 1)).0"
+            ;;
+          "patch")
+            NEW_VERSION="${PARTS[0]}.${PARTS[1]}.$((${PARTS[2]} + 1))"
+            ;;
+        esac
+        
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "Bumping from $CURRENT to $NEW_VERSION"
+    
+    - name: Update version in files
+      run: |
+        sed -i "s/Version: .*/Version: ${{ steps.version.outputs.new_version }}/" homepage-elementor.php
+        sed -i "s/new Homepage_Elementor_Updater(__FILE__, '[^']*')/new Homepage_Elementor_Updater(__FILE__, '${{ steps.version.outputs.new_version }}')/" homepage-elementor.php
+        sed -i "s/## Version .*/## Version ${{ steps.version.outputs.new_version }}/" README.md
+    
+    - name: Commit and tag
+      run: |
+        git config --local user.email "kamaltz@users.noreply.github.com"
+        git config --local user.name "kamaltz"
+        git add .
+        git commit -m "Release v${{ steps.version.outputs.new_version }}"
+        git tag "v${{ steps.version.outputs.new_version }}"
+        git push origin main
+        git push origin --tags
+    
+    - name: Create plugin zip
+      run: |
+        zip -r homepage-elementor-${{ steps.version.outputs.new_version }}.zip . \
+          -x "*.git*" "*.github*" "*.md" "*.txt" "node_modules/*" "scripts/*"
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.new_version }}
+        name: Release v${{ steps.version.outputs.new_version }}
+        files: homepage-elementor-${{ steps.version.outputs.new_version }}.zip
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

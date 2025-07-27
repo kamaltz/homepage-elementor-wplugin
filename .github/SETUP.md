@@ -19,7 +19,17 @@
 
 ## How it works
 
-- Every push to main → auto-increment patch version
-- Creates git tag and GitHub release
-- Builds plugin zip file
-- Notifies WordPress sites via webhook
+### Auto Build (deploy.yml)
+- Push to main → auto-increment version in build
+- Creates GitHub release with incremented version
+- No git commits from Actions
+
+### Manual Release (release.yml)
+- Manual trigger from Actions tab
+- Choose version type (patch/minor/major)
+- Commits version bump to repo
+- Creates tagged release
+
+### Usage
+1. **Development**: Push code changes → auto-build with incremented version
+2. **Release**: Use manual workflow for official releases with git tags
