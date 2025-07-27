@@ -150,6 +150,15 @@
     padding: 40px 0;
 }
 
+/* Dots positioning based on arrow position */
+.category--banner[data-arrow-position="bottom-center"] .slick-dots {
+    bottom: 80px;
+}
+
+.category--banner[data-show-dots="yes"] .slick-dots {
+    display: block !important;
+}
+
 .slick-arrow {
     background: rgba(255,255,255,0.2);
     border: 1px solid rgba(255,255,255,0.5);
@@ -515,16 +524,31 @@
 .category--banner-list .slick-dots {
     bottom: 20px;
     z-index: 10;
+    text-align: center;
+}
+
+.category--banner-list .slick-dots li {
+    display: inline-block;
+    margin: 0 5px;
+}
+
+.category--banner-list .slick-dots li button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .category--banner-list .slick-dots li button:before {
-    color: white;
-    font-size: 12px;
-    opacity: 0.5;
+    display: none;
 }
 
-.category--banner-list .slick-dots li.slick-active button:before {
-    opacity: 1;
+.category--banner-list .slick-dots li.slick-active button {
+    background: white;
+    transform: scale(1.2);
 }
 
 /* Fix for widget visibility */

@@ -122,6 +122,15 @@ class Category_Banner_Widget extends \Elementor\Widget_Base {
         );
         
         $this->add_control(
+            'show_dots',
+            [
+                'label' => 'Show Dots',
+                'type' => \Elementor\Controls_Manager::SWITCHER,
+                'default' => 'no',
+            ]
+        );
+        
+        $this->add_control(
             'arrow_position',
             [
                 'label' => 'Arrow Position',
@@ -206,6 +215,74 @@ class Category_Banner_Widget extends \Elementor\Widget_Base {
                 'name' => 'subtitle_typography',
                 'label' => 'Subtitle Typography',
                 'selector' => '{{WRAPPER}} .category--banner-subheading',
+            ]
+        );
+        
+        $this->end_controls_section();
+        
+        // Caption Style Section
+        $this->start_controls_section(
+            'caption_style_section',
+            [
+                'label' => 'Caption Style',
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            ]
+        );
+        
+        $this->add_control(
+            'caption_bg_color',
+            [
+                'label' => 'Caption Background',
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => 'rgba(0,0,0,0.7)',
+                'selectors' => [
+                    '{{WRAPPER}} .category--banner-content' => 'background: {{VALUE}};',
+                ],
+            ]
+        );
+        
+        $this->add_responsive_control(
+            'caption_padding',
+            [
+                'label' => 'Caption Padding',
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', 'em', '%'],
+                'default' => [
+                    'top' => '60',
+                    'right' => '0',
+                    'bottom' => '40',
+                    'left' => '0',
+                    'unit' => 'px',
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .category--banner-content' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        
+        $this->add_responsive_control(
+            'caption_text_align',
+            [
+                'label' => 'Text Alignment',
+                'type' => \Elementor\Controls_Manager::CHOOSE,
+                'options' => [
+                    'left' => [
+                        'title' => 'Left',
+                        'icon' => 'eicon-text-align-left',
+                    ],
+                    'center' => [
+                        'title' => 'Center',
+                        'icon' => 'eicon-text-align-center',
+                    ],
+                    'right' => [
+                        'title' => 'Right',
+                        'icon' => 'eicon-text-align-right',
+                    ],
+                ],
+                'default' => 'left',
+                'selectors' => [
+                    '{{WRAPPER}} .category--banner-content' => 'text-align: {{VALUE}};',
+                ],
             ]
         );
         
@@ -309,9 +386,9 @@ class Category_Banner_Widget extends \Elementor\Widget_Base {
     protected function render() {
         $settings = $this->get_settings_for_display();
         ?>
-        <section class="category--banner" data-arrow-position="<?php echo esc_attr($settings['arrow_position']); ?>" data-caption-position="<?php echo esc_attr($settings['caption_position']); ?>">
+        <section class="category--banner" data-arrow-position="<?php echo esc_attr($settings['arrow_position']); ?>" data-caption-position="<?php echo esc_attr($settings['caption_position']); ?>" data-show-dots="<?php echo esc_attr($settings['show_dots']); ?>">
             <div class="category--banner-wrapper">
-                <div class="category--banner-list" data-slides-show="<?php echo esc_attr($settings['slides_to_show']); ?>" data-slides-scroll="<?php echo esc_attr($settings['slides_to_scroll']); ?>">
+                <div class="category--banner-list" data-slides-show="<?php echo esc_attr($settings['slides_to_show']); ?>" data-slides-scroll="<?php echo esc_attr($settings['slides_to_scroll']); ?>" data-show-dots="<?php echo esc_attr($settings['show_dots']); ?>">
                     <?php foreach ($settings['banners'] as $banner) : ?>
                         <div class="category--banner-item">
                             <?php if (!empty($banner['link']['url'])) : ?>

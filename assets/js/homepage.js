@@ -14,9 +14,10 @@ jQuery(document).ready(function($) {
             
             const $banner = $slider.closest('.category--banner');
             const arrowPosition = $banner.data('arrow-position') || 'bottom-right';
+            const showDots = $slider.data('show-dots') === 'yes';
             
             $slider.slick({
-                dots: false,
+                dots: showDots,
                 infinite: true,
                 slidesToShow: slidesToShow,
                 slidesToScroll: slidesToScroll,
