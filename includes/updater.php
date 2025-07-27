@@ -74,7 +74,10 @@ class Homepage_Elementor_Updater {
         }
         
         $release = json_decode(wp_remote_retrieve_body($response), true);
-        return isset($release['tag_name']) ? $release['tag_name'] : $this->version;
+        $tag_name = isset($release['tag_name']) ? $release['tag_name'] : $this->version;
+        
+        // Remove 'v' prefix if exists
+        return ltrim($tag_name, 'v');
     }
     
     private function get_download_url() {

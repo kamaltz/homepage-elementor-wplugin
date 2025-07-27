@@ -22,6 +22,7 @@ class Homepage_Elementor {
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('admin_init', [$this, 'register_settings']);
         add_action('wp_ajax_check_github_update', [$this, 'check_github_update']);
+        add_action('wp_ajax_clear_update_cache', [$this, 'clear_update_cache']);
         
         // Initialize updater
         new Homepage_Elementor_Updater(__FILE__, '1.0.0');
@@ -127,8 +128,24 @@ class Homepage_Elementor {
             </form>
             
             <h2>Manual Update</h2>
+            <p><strong>Current Version:</strong> <?php echo get_plugin_data(__FILE__)['Version']; ?></p>
+            <p><strong>Repository:</strong> <?php echo esc_html(get_option('homepage_github_repo', 'Not configured')); ?></p>
             <button type="button" id="check-update" class="button button-primary">Check for Updates</button>
             <div id="update-status"></div>
+            
+            <h3>Debug Info</h3>
+            <button type="button" id="clear-cache" class="button">Clear Update Cache</button>
+            <script>
+            jQuery(document).ready(function($) {
+                $('#clear-cache').click(function() {
+                    $.post(ajaxurl, {
+                        action: 'clear_update_cache'
+                    }, function() {
+                        alert('Cache cleared');
+                    });
+                });
+            });
+            </script>
             
             <script>
             jQuery(document).ready(function($) {
@@ -169,13 +186,14 @@ class Homepage_Elementor {
         
         $release = json_decode(wp_remote_retrieve_body($response), true);
         $current_version = get_plugin_data(__FILE__)['Version'];
+        $remote_version = ltrim($release['tag_name'], 'v');
         
-        if (version_compare($release['tag_name'], $current_version, '>')) {
-            $this->download_and_install($release['zipball_url'], $token);
-            wp_send_json_success('Updated to version ' . $release['tag_name']);
-        } else {
-            wp_send_json_success('Plugin is up to date (v' . $current_version . ')');
-        }
+        wp_send_json_success(sprintf(
+            'Current: v%s, Remote: v%s. %s',
+            $current_version,
+            $remote_version,
+            version_compare($remote_version, $current_version, '>') ? 'Update available!' : 'Up to date.'
+        ));
     }
     
     private function download_and_install($zip_url, $token = '') {
@@ -202,6 +220,11 @@ class Homepage_Elementor {
         unlink($temp_file);
         
         return !is_wp_error($unzip);
+    }
+    
+    public function clear_update_cache() {
+        delete_site_transient('update_plugins');
+        wp_send_json_success('Cache cleared');
     }
 }
 
