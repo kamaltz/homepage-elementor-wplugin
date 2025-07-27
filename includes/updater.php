@@ -16,14 +16,10 @@ class Homepage_Elementor_Updater {
         $this->repo = get_option('homepage_github_repo');
         $this->token = get_option('homepage_github_token');
         
-        // Only enable if auto-update is enabled
-        if (get_option('homepage_auto_update')) {
-            add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
-            add_filter('plugins_api', [$this, 'plugin_info'], 20, 3);
-            add_action('in_plugin_update_message-' . plugin_basename($this->plugin_file), [$this, 'plugin_update_message']);
-        }
-        
-        add_action('upgrader_process_complete', [$this, 'after_plugin_update'], 10, 2);
+        // Disable all auto-update hooks - manual only
+        // add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
+        // add_filter('plugins_api', [$this, 'plugin_info'], 20, 3);
+        // add_action('in_plugin_update_message-' . plugin_basename($this->plugin_file), [$this, 'plugin_update_message']);
     }
     
     public function check_for_update($transient) {

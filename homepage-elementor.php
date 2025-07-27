@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Homepage Elementor
  * Description: Plugin homepage editor untuk Elementor dengan elemen kustomisasi lengkap
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: kamaltz
  */
 
@@ -27,7 +27,7 @@ class Homepage_Elementor {
         add_action('wp_ajax_clear_update_notification', [$this, 'clear_update_notification']);
         
         // Initialize updater
-        new Homepage_Elementor_Updater(__FILE__, '1.0.5');
+        new Homepage_Elementor_Updater(__FILE__, '1.0.6');
     }
     
     public function init() {
@@ -126,8 +126,8 @@ class Homepage_Elementor {
                     <tr>
                         <th scope="row">Auto Update</th>
                         <td>
-                            <input type="checkbox" name="homepage_auto_update" value="1" <?php checked(get_option('homepage_auto_update'), 1); ?> />
-                            <label>Enable automatic updates from GitHub</label>
+                            <input type="checkbox" name="homepage_auto_update" value="1" disabled />
+                            <label style="color: #666;">Disabled - Use manual update only to prevent notification loops</label>
                         </td>
                     </tr>
                 </table>
@@ -157,8 +157,9 @@ class Homepage_Elementor {
                 Constructor: 1.0.5
             </p>
             <p><strong>Auto-Update Status:</strong> 
-                <?php echo get_option('homepage_auto_update') ? 'Enabled (notifications will show)' : 'Disabled (manual only)'; ?>
+                <span style="color: red;">DISABLED</span> - WordPress notifications disabled to prevent loops. Use manual update only.
             </p>
+            <p><strong>Note:</strong> If you see persistent update notifications, click "Clear Update Notification" button above.</p>
             <button type="button" id="clear-cache" class="button">Clear Update Cache</button>
             <button type="button" id="clear-notification" class="button button-secondary">Clear Update Notification</button>
             
@@ -391,11 +392,23 @@ class Homepage_Elementor {
     }
     
     public function clear_update_notification() {
+        // Clear all update-related transients
         delete_site_transient('update_plugins');
+        delete_site_transient('update_themes');
         delete_transient('homepage_elementor_last_check');
         delete_transient('homepage_elementor_updated');
+        
+        // Clear plugin-specific caches
+        $plugin_slug = plugin_basename(__FILE__);
+        wp_cache_delete($plugin_slug, 'plugin_meta');
+        wp_cache_delete('plugins', 'plugins');
+        
+        // Force WordPress to forget about updates
+        global $wp_current_filter;
+        remove_all_filters('pre_set_site_transient_update_plugins');
+        
         wp_cache_flush();
-        wp_send_json_success('Update notification cleared');
+        wp_send_json_success('All update notifications cleared');
     }
 }
 
