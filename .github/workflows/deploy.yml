@@ -69,10 +69,11 @@ jobs:
   notify:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && secrets.WEBHOOK_URL != ''
+    if: github.ref == 'refs/heads/main'
     
     steps:
     - name: Notify WordPress sites
+      if: ${{ secrets.WEBHOOK_URL != '' }}
       run: |
         curl -X POST "${{ secrets.WEBHOOK_URL }}" \
           -H "Content-Type: application/json" \
