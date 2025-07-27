@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Homepage Elementor
  * Description: Plugin homepage editor untuk Elementor dengan elemen kustomisasi lengkap
- * Version: 1.0.6
+ * Version: 1.0.7
  * Author: kamaltz
  */
 
@@ -27,7 +27,7 @@ class Homepage_Elementor {
         add_action('wp_ajax_clear_update_notification', [$this, 'clear_update_notification']);
         
         // Initialize updater
-        new Homepage_Elementor_Updater(__FILE__, '1.0.6');
+        new Homepage_Elementor_Updater(__FILE__, '1.0.7');
     }
     
     public function init() {
@@ -154,7 +154,10 @@ class Homepage_Elementor {
             ?></p>
             <p><strong>Version Check:</strong> 
                 File: <?php echo get_plugin_data(__FILE__)['Version']; ?> | 
-                Constructor: 1.0.5
+                Constructor: 1.0.7
+            </p>
+            <p><strong>Plugin Directory:</strong> 
+                <?php echo dirname(__FILE__); ?>
             </p>
             <p><strong>Auto-Update Status:</strong> 
                 <span style="color: red;">DISABLED</span> - WordPress notifications disabled to prevent loops. Use manual update only.
@@ -276,13 +279,13 @@ class Homepage_Elementor {
             return false;
         }
         
-        $plugin_slug = dirname(plugin_basename(__FILE__));
-        $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
-        $backup_dir = $plugin_dir . '_backup_' . time();
+        // Always use 'homepage-elementor-wplugin' as directory name
+        $target_plugin_dir = WP_PLUGIN_DIR . '/homepage-elementor-wplugin';
+        $backup_dir = $target_plugin_dir . '_backup_' . time();
         
         // Backup current plugin
-        if (is_dir($plugin_dir)) {
-            rename($plugin_dir, $backup_dir);
+        if (is_dir($target_plugin_dir)) {
+            rename($target_plugin_dir, $backup_dir);
         }
         
         // Create temp extraction directory
@@ -296,7 +299,7 @@ class Homepage_Elementor {
         if (is_wp_error($unzip)) {
             // Restore backup
             if (is_dir($backup_dir)) {
-                rename($backup_dir, $plugin_dir);
+                rename($backup_dir, $target_plugin_dir);
             }
             return false;
         }
@@ -307,8 +310,8 @@ class Homepage_Elementor {
             return false;
         }
         
-        // Move extracted content to plugin directory
-        rename($extracted_folders[0], $plugin_dir);
+        // Move extracted content to target plugin directory
+        rename($extracted_folders[0], $target_plugin_dir);
         
         // Clean up
         $this->delete_directory($temp_dir);
@@ -317,18 +320,21 @@ class Homepage_Elementor {
         wp_cache_flush();
         
         // Force plugin data refresh
-        $plugin_file = $plugin_dir . '/homepage-elementor.php';
+        $plugin_file = $target_plugin_dir . '/homepage-elementor.php';
         if (file_exists($plugin_file)) {
             $new_plugin_data = get_plugin_data($plugin_file);
             if (isset($new_plugin_data['Version'])) {
                 update_option('homepage_elementor_version', $new_plugin_data['Version']);
                 
-                // Update WordPress plugin cache
-                $plugin_basename = plugin_basename($plugin_file);
+                // Update WordPress plugin cache with consistent basename
+                $plugin_basename = 'homepage-elementor-wplugin/homepage-elementor.php';
                 wp_cache_delete($plugin_basename, 'plugin_meta');
                 wp_cache_delete('plugins', 'plugins');
             }
         }
+        
+        // Clean up any duplicate directories
+        $this->cleanup_duplicate_directories();
         
         return true;
     }
@@ -342,6 +348,28 @@ class Homepage_Elementor {
             is_dir($path) ? $this->delete_directory($path) : unlink($path);
         }
         rmdir($dir);
+    }
+    
+    private function cleanup_duplicate_directories() {
+        $plugins_dir = WP_PLUGIN_DIR;
+        $target_name = 'homepage-elementor-wplugin';
+        
+        // Look for directories that might be duplicates
+        $possible_duplicates = [
+            'homepage-elementor',
+            'homepage-elementor-plugin',
+            'homepage-elementor-master'
+        ];
+        
+        foreach ($possible_duplicates as $duplicate) {
+            $duplicate_path = $plugins_dir . '/' . $duplicate;
+            if (is_dir($duplicate_path) && $duplicate !== $target_name) {
+                // Check if it contains our plugin file
+                if (file_exists($duplicate_path . '/homepage-elementor.php')) {
+                    $this->delete_directory($duplicate_path);
+                }
+            }
+        }
     }
     
     public function clear_update_cache() {
