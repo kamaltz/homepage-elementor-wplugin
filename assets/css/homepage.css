@@ -19,6 +19,7 @@
     position: relative;
     height: 80vh;
     overflow: hidden;
+    min-height: 300px;
 }
 
 .category--banner-item img {
@@ -26,6 +27,7 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
+    transition: transform 0.3s ease;
 }
 
 .category--banner-item img {
@@ -424,8 +426,12 @@
     }
     
     .category--banner-item {
-        height: 50vh;
-        min-height: 300px;
+        height: 60vh;
+        min-height: 250px;
+    }
+    
+    .category--banner-item img {
+        object-fit: cover;
     }
     
     .category--banner-heading {

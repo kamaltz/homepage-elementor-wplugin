@@ -165,6 +165,92 @@ class Category_Banner_Widget extends \Elementor\Widget_Base {
             ]
         );
         
+        $this->add_responsive_control(
+            'image_height',
+            [
+                'label' => 'Image Height',
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'size_units' => ['px', 'vh', '%'],
+                'range' => [
+                    'px' => [
+                        'min' => 200,
+                        'max' => 1000,
+                    ],
+                    'vh' => [
+                        'min' => 20,
+                        'max' => 100,
+                    ],
+                    '%' => [
+                        'min' => 20,
+                        'max' => 100,
+                    ],
+                ],
+                'default' => [
+                    'unit' => 'vh',
+                    'size' => 80,
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .category--banner-item' => 'height: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'image_object_fit',
+            [
+                'label' => 'Image Fit',
+                'type' => \Elementor\Controls_Manager::SELECT,
+                'default' => 'cover',
+                'options' => [
+                    'cover' => 'Cover',
+                    'contain' => 'Contain',
+                    'fill' => 'Fill',
+                    'none' => 'None',
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .category--banner-item img' => 'object-fit: {{VALUE}};',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'image_object_position',
+            [
+                'label' => 'Image Position',
+                'type' => \Elementor\Controls_Manager::SELECT,
+                'default' => 'center',
+                'options' => [
+                    'center' => 'Center',
+                    'top' => 'Top',
+                    'bottom' => 'Bottom',
+                    'left' => 'Left',
+                    'right' => 'Right',
+                    'top left' => 'Top Left',
+                    'top right' => 'Top Right',
+                    'bottom left' => 'Bottom Left',
+                    'bottom right' => 'Bottom Right',
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .category--banner-item img' => 'object-position: {{VALUE}};',
+                ],
+                'condition' => [
+                    'image_object_fit!' => 'fill',
+                ],
+            ]
+        );
+        
+        $this->add_responsive_control(
+            'image_border_radius',
+            [
+                'label' => 'Border Radius',
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%'],
+                'selectors' => [
+                    '{{WRAPPER}} .category--banner-item' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}}; overflow: hidden;',
+                ],
+            ]
+        );
+        
         $this->end_controls_section();
         
         // Style Section
