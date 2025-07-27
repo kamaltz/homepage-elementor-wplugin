@@ -1,8 +1,16 @@
 name: Deploy Plugin
 
+permissions:
+  contents: write
+  packages: write
+  pull-requests: read
+
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - '.github/**'
   pull_request:
     branches: [ main ]
 
@@ -24,14 +32,14 @@ jobs:
   version:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip ci]')
     outputs:
       new_version: ${{ steps.version.outputs.new_version }}
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.PAT_TOKEN }}
     
     - name: Get current version
       id: current
@@ -56,13 +64,13 @@ jobs:
     
     - name: Commit version bump
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "kamaltz@users.noreply.github.com"
+        git config --local user.name "kamaltz"
         git add .
-        git commit -m "Bump version to ${{ steps.version.outputs.new_version }}"
+        git commit -m "Bump version to ${{ steps.version.outputs.new_version }} [skip ci]"
         git tag "v${{ steps.version.outputs.new_version }}"
-        git push
-        git push --tags
+        git push origin main
+        git push origin --tags
 
   build:
     needs: version
