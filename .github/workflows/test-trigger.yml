@@ -1,0 +1,12 @@
+name: Test Trigger
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test-trigger:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Test
+      run: echo "Workflow triggered successfully on commit ${{ github.sha }}"

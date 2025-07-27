@@ -2,12 +2,16 @@
 
 ## Required Secrets
 
-1. **PAT_TOKEN**: Personal Access Token dengan permissions:
+1. **WEBHOOK_URL**: URL endpoint untuk WordPress webhook (optional)
+
+## For Manual Releases Only
+
+2. **PAT_TOKEN**: Personal Access Token dengan permissions:
    - `repo` (full control)
    - `workflow`
    - `write:packages`
-
-2. **WEBHOOK_URL**: URL endpoint untuk WordPress webhook (optional)
+   
+   Note: Only needed if you want to use manual release workflow
 
 ## Setup Steps
 

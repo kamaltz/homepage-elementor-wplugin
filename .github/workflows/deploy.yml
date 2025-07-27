@@ -4,16 +4,11 @@ permissions:
   contents: write
   packages: write
   pull-requests: read
+  actions: write
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - '**.php'
-      - '**.css'
-      - '**.js'
-      - 'assets/**'
-      - 'widgets/**'
   pull_request:
     branches: [ main ]
 
@@ -32,7 +27,7 @@ jobs:
         test -d widgets
         test -d assets
 
-  version:
+  build:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
@@ -49,47 +44,36 @@ jobs:
         PATCH=$((${PARTS[2]} + 1))
         NEW_VERSION="${PARTS[0]}.${PARTS[1]}.$PATCH"
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-        echo "Current: $VERSION, New: $NEW_VERSION"
+        echo "Building version: $NEW_VERSION"
     
-    - name: Update version in files
+    - name: Update version in build files
       run: |
         sed -i "s/Version: .*/Version: ${{ steps.version.outputs.new_version }}/" homepage-elementor.php
         sed -i "s/new Homepage_Elementor_Updater(__FILE__, '[^']*')/new Homepage_Elementor_Updater(__FILE__, '${{ steps.version.outputs.new_version }}')/" homepage-elementor.php
-        sed -i "s/## Version .*/## Version ${{ steps.version.outputs.new_version }}/" README.md
-
-  build:
-    needs: version
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        ref: main
     
     - name: Create plugin zip
       run: |
-        zip -r homepage-elementor-${{ needs.version.outputs.new_version }}.zip . \
+        zip -r homepage-elementor-${{ steps.version.outputs.new_version }}.zip . \
           -x "*.git*" "*.github*" "*.md" "*.txt" "node_modules/*" "scripts/*"
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v${{ needs.version.outputs.new_version }}
-        name: Release v${{ needs.version.outputs.new_version }}
-        files: homepage-elementor-${{ needs.version.outputs.new_version }}.zip
+        tag_name: v${{ steps.version.outputs.new_version }}
+        name: Release v${{ steps.version.outputs.new_version }}
+        files: homepage-elementor-${{ steps.version.outputs.new_version }}.zip
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify:
-    needs: [version, build]
+    needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && secrets.WEBHOOK_URL != ''
     
     steps:
     - name: Notify WordPress sites
       run: |
         curl -X POST "${{ secrets.WEBHOOK_URL }}" \
           -H "Content-Type: application/json" \
-          -d '{"version": "${{ needs.version.outputs.new_version }}", "repo": "${{ github.repository }}"}'
+          -d '{"version": "${{ needs.build.outputs.new_version }}", "repo": "${{ github.repository }}"}'
