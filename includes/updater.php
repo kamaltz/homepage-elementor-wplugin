@@ -39,7 +39,13 @@ class Homepage_Elementor_Updater {
         $current_plugin_data = get_plugin_data($this->plugin_file, false, false);
         $current_version = $current_plugin_data['Version'];
         
-        if (version_compare($current_version, $remote_version, '<')) {
+        // Also check constructor version
+        $constructor_version = $this->version;
+        
+        // Use the higher version between file and constructor
+        $actual_version = version_compare($current_version, $constructor_version, '>') ? $current_version : $constructor_version;
+        
+        if (version_compare($actual_version, $remote_version, '<')) {
             $transient->response[$plugin_slug] = (object) [
                 'slug' => dirname($plugin_slug),
                 'plugin' => $plugin_slug,
@@ -50,6 +56,11 @@ class Homepage_Elementor_Updater {
         } else {
             // Remove from response if up to date
             unset($transient->response[$plugin_slug]);
+            
+            // Also remove from no_update to prevent caching issues
+            if (isset($transient->no_update)) {
+                unset($transient->no_update[$plugin_slug]);
+            }
         }
         
         return $transient;
@@ -103,6 +114,11 @@ class Homepage_Elementor_Updater {
     public function force_update_check() {
         if (!$this->repo) return;
         
+        // Skip if just updated
+        if (get_transient('homepage_elementor_updated')) {
+            return;
+        }
+        
         // Check every hour
         $last_check = get_transient('homepage_elementor_last_check');
         if ($last_check && (time() - $last_check) < 3600) {
@@ -126,11 +142,15 @@ class Homepage_Elementor_Updater {
             if (isset($options['plugins']) && in_array($plugin_slug, $options['plugins'])) {
                 // Clear all caches after update
                 delete_site_transient('update_plugins');
+                delete_transient('homepage_elementor_last_check');
                 wp_cache_flush();
                 
                 // Force refresh plugin data
                 wp_cache_delete($plugin_slug, 'plugin_meta');
                 wp_cache_delete('plugins', 'plugins');
+                
+                // Set flag that update completed
+                set_transient('homepage_elementor_updated', time(), 300);
             }
         }
     }

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Homepage Elementor
  * Description: Plugin homepage editor untuk Elementor dengan elemen kustomisasi lengkap
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: kamaltz
  */
 
@@ -27,7 +27,7 @@ class Homepage_Elementor {
         add_action('wp_ajax_force_update_check', [$this, 'ajax_force_update_check']);
         
         // Initialize updater
-        new Homepage_Elementor_Updater(__FILE__, '1.0.3');
+        new Homepage_Elementor_Updater(__FILE__, '1.0.4');
     }
     
     public function init() {
@@ -148,6 +148,17 @@ class Homepage_Elementor {
                 $last_check = get_transient('homepage_elementor_last_check');
                 echo $last_check ? date('Y-m-d H:i:s', $last_check) : 'Never';
             ?></p>
+            <p><strong>Update Status:</strong> <?php 
+                $updated = get_transient('homepage_elementor_updated');
+                echo $updated ? 'Recently updated (' . date('Y-m-d H:i:s', $updated) . ')' : 'Normal';
+            ?></p>
+            <p><strong>Version Check:</strong> 
+                File: <?php echo get_plugin_data(__FILE__)['Version']; ?> | 
+                Constructor: <?php 
+                    $updater = new Homepage_Elementor_Updater(__FILE__, '1.0.4');
+                    echo '1.0.4';
+                ?>
+            </p>
             <button type="button" id="clear-cache" class="button">Clear Update Cache</button>
             <button type="button" id="force-check" class="button">Force Update Check</button>
             
